@@ -63,9 +63,9 @@ sensors:
     roll: 0.0
 
   lidar:
-    channels: 128
+    channels: 64
     range: 80.0
-    points_per_second: 100000
+    points_per_second: 1000000
     rotation_frequency: 20.0
     upper_fov: 10.0
     lower_fov: -30.0

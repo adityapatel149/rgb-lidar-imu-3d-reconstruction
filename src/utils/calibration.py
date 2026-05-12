@@ -1,5 +1,4 @@
 import math
-from xml.dom import VALIDATION_ERR
 import numpy as np
 import cv2
 
@@ -66,7 +65,17 @@ def serialize_matrix(matrix):
 
 
 
-def build_calibration(camera_cfgs, camera_actors, lidar_actor, imu_actor):
+def relative_actor_transform_matrix(parent_actor, child_actor):
+    T_world_parent = carla_transform_to_matrix(parent_actor.get_transform())
+    T_world_child = carla_transform_to_matrix(child_actor.get_transform())
+
+    # child/sensor frame -> parent/vehicle frame
+    T_parent_child = np.linalg.inv(T_world_parent) @ T_world_child
+    return T_parent_child
+
+
+
+def build_calibration(vehicle, camera_cfgs, camera_actors, lidar_actor, imu_actor):
     calib = {
         "frame_convention": {
             "vehicle_frame": "CARLA vehicle local frame",
@@ -85,7 +94,7 @@ def build_calibration(camera_cfgs, camera_actors, lidar_actor, imu_actor):
         fov = float(cfg["fov"])
 
         K, D = camera_intrinsics(width, height, fov)
-        T_vehicle_camera = carla_transform_to_matrix(camera_actors[name].get_transform())
+        T_vehicle_camera = relative_actor_transform_matrix(vehicle, camera_actors[name])
 
         calib["cameras"][name] = {
             "image_width": width,
@@ -96,8 +105,8 @@ def build_calibration(camera_cfgs, camera_actors, lidar_actor, imu_actor):
             "T_vehicle_camera": serialize_matrix(T_vehicle_camera),
         }
 
-    T_vehicle_lidar = carla_transform_to_matrix(lidar_actor.get_transform())
-    T_vehicle_imu = carla_transform_to_matrix(imu_actor.get_transform())
+    T_vehicle_lidar = relative_actor_transform_matrix(vehicle, lidar_actor)
+    T_vehicle_imu = relative_actor_transform_matrix(vehicle, imu_actor)
 
     calib["lidar"] = {
         "T_vehicle_lidar": serialize_matrix(T_vehicle_lidar),
@@ -184,7 +193,7 @@ def save_lidar_projection_debug(rgb_image, lidar_points, camera_calib, lidar_cal
     depth = depth[valid]
 
     if len(depth) > 0:
-        depth_norm = np.clip(depth / 80.0, 0.0, 1.0)
+        depth_norm = np.clip(depth / 80.0, 0.0, 1.0)    # 80 is the lidar range in sensors.yaml
         colors = (255 * (1.0 - depth_norm)).astype(np.uint8)
 
         for (u, v), c in zip(uv[::3], colors[::3]):

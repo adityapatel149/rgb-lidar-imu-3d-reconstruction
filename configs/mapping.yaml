@@ -1,0 +1,58 @@
+scene_dir: data/carla/raw/scene_001
+trajectory_dir: outputs/trajectories/scene_001
+output_dir: outputs/maps/scene_001
+
+calibration_path: null    # Set path for different file. null uses default calibration file at data/carla/raw/scene_001/calib/calibration.json
+
+pose_source_for_main_output: fused    # ground_truth, imu_only, icp_only, fused
+
+camera_names:   # Must match camera folder names, like rgb/front, rgb/right, etc.
+  - front
+  - left
+  - right
+  - rear
+  
+rgb_extension: ".jpg"
+
+lidar:
+  min_range: 1.0
+  max_range: 80.0
+  max_points_per_frame: null    # null uses all valid LiDAR points.
+
+projection:
+  min_depth: 0.1
+  border_margin_px: 2   # Reject pixels too close to image border
+  center_weight: 1.0
+  angle_weight: 1.0
+  depth_weight: 0.05
+  color_mode: best    # best or average. If multiple camera sees a lidar point, choose camera with best score (lower is better). Or average colors from all cameras.
+
+mapping:
+  frame_stride: 1
+  voxel_size: 0.15
+  remove_outliers: false
+  outlier_nb_neighbors: 20
+  outlier_std_ratio: 2.0    # lower value more agressive removal, higher value less agressive removal
+
+evaluation:
+  max_eval_points: 1000000
+  eval_initial_voxel_size: 0.05
+
+  distance_thresholds_m:      # Distance thresholds for precision / recall / F-score.
+    - 0.10
+    - 0.25
+    - 0.50
+    - 1.00
+
+  voxel_sizes_m:      # Voxel sizes for occupancy IoU / voxel precision / voxel recall.
+    - 0.10
+    - 0.25
+    - 0.50
+
+  normal_radius: 0.50       # Normal estimation settings for normal consistency.
+  normal_max_nn: 30
+
+
+visualization:
+  max_points_plot: 1000000   # Maximum points plotted in .png visualization. null for no downsampling. Does not affect .ply map
+  initial_voxel_size_plot: 0.05

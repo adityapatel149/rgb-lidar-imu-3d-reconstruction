@@ -4,8 +4,8 @@ import json
 
 from src.odometry.lio import run_lio
 from src.evaluation.trajectory_eval import compute_ate, compute_final_drift
-from src.visualization.vis_trajectory import plot_trajectories, save_trajectory_csv
-
+from src.visualization.vis_trajectory import plot_trajectories
+from src.utils.io import save_trajectory_csv, save_pose_matrices_npz
 
 def main():
     parser = argparse.ArgumentParser()
@@ -57,6 +57,10 @@ def main():
     save_trajectory_csv(icp, output_dir / "icp_only.csv")
     save_trajectory_csv(fused, output_dir / "tightly_fused_lio.csv")
 
+    save_pose_matrices_npz(output_dir / "ground_truth_poses.npz", gt)
+    save_pose_matrices_npz(output_dir / "imu_only_poses.npz", imu)
+    save_pose_matrices_npz(output_dir / "icp_only_poses.npz", icp)
+    save_pose_matrices_npz(output_dir / "tightly_fused_lio_poses.npz", fused)
     # print(json.dumps(metrics, indent=2))
     print(f"Saved outputs to: {output_dir}")
 

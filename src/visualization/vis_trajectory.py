@@ -1,8 +1,11 @@
 from pathlib import Path
 import matplotlib.pyplot as plt
-import numpy as np
 
 from src.odometry.trajectory_utils import poses_to_xyz
+from src.utils.visualization import (
+    compute_equal_xy_limits,
+    save_matplotlib_figure,
+)
 
 
 def plot_trajectories(
@@ -23,6 +26,8 @@ def plot_trajectories(
         "IMU+LiDAR Fused": fused,
     }
     """
+    if len(trajectories) == 0:
+        raise ValueError("Expected at least one trajectory to plot")
 
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -66,36 +71,17 @@ def plot_trajectories(
         xyz_by_name[name] = xyz
 
     if same_axes:
-        valid_xyz = [
-            xyz[:, :2]
-            for xyz in xyz_by_name.values()
-            if xyz is not None and len(xyz) > 0
-        ]
-
-        if len(valid_xyz) > 0:
-            all_xy = np.vstack(valid_xyz)
-
-            x_min, y_min = np.min(all_xy, axis=0)
-            x_max, y_max = np.max(all_xy, axis=0)
-
-            cx = 0.5 * (x_min + x_max)
-            cy = 0.5 * (y_min + y_max)
-
-            span = max(x_max - x_min, y_max - y_min)
-            if span < 1e-6:
-                span = 1.0
-
-            margin = 0.05 * span
-            half = 0.5 * span + margin
-
-            xlim = (cx - half, cx + half)
-            ylim = (cy - half, cy + half)
-        else:
-            xlim = None
-            ylim = None
+        xlim, ylim = compute_equal_xy_limits(
+            [
+                xyz[:, :2]
+                for xyz in xyz_by_name.values()
+                if xyz is not None and len(xyz) > 0
+            ]
+        )
     else:
         xlim = None
         ylim = None
+
 
     for ax, (name, poses) in zip(axes, trajectories.items()):
         xyz = xyz_by_name[name]
@@ -149,30 +135,5 @@ def plot_trajectories(
 
     fig.suptitle(title, fontsize=16)
 
-    plt.tight_layout()
-
-    plt.savefig(output_path, dpi=300)
-
+    save_matplotlib_figure(fig, output_path, dpi=300)
     print(f"Saved trajectory plot to: {output_path}")
-
-    plt.close()
-
-
-def save_trajectory_csv(poses, output_path, align_to_origin=False):
-    output_path = Path(output_path)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    xyz = poses_to_xyz(poses)
-
-    if align_to_origin and len(xyz) > 0:
-        xyz = xyz - xyz[0]
-
-    with open(output_path, "w") as f:
-        f.write("index,x,y,z\n")
-
-        for i, p in enumerate(xyz):
-            f.write(
-                f"{i},{p[0]:.6f},{p[1]:.6f},{p[2]:.6f}\n"
-            )
-
-    print(f"Saved trajectory CSV to: {output_path}")

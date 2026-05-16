@@ -6,12 +6,7 @@ from src.calibration.calibration_loader import Calibration
 from src.odometry.eskf import ErrorStateKalmanFilter
 from src.odometry.icp_odometry import load_lidar_cloud, run_icp_pair, lidar_files
 from src.odometry.trajectory_utils import pose_row_to_matrix
-
-
-
-
-def extract_frame_id(path):
-    return int(Path(path).stem)
+from src.utils.io import extract_frame_id
 
 
 

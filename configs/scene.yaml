@@ -2,8 +2,15 @@ world:
   town: Town02
   fixed_delta_seconds: 0.05    # 20fps
 
+
 vehicle:
   blueprint: vehicle.tesla.model3
+
+
+traffic:
+  enabled: true
+  vehicles: 30
+
 
 sensors:
   cameras:
@@ -51,16 +58,52 @@ sensors:
       yaw: 180.0
       roll: 0.0
 
-  semantic:
-    width: 1280
-    height: 720
-    fov: 90
-    x: 1.5
-    y: 0.0
-    z: 1.6
-    pitch: 0.0
-    yaw: 0.0
-    roll: 0.0
+
+  semantic_cameras:
+    - name: front
+      width: 1280
+      height: 720
+      fov: 90
+      x: 1.5
+      y: 0.0
+      z: 1.6
+      pitch: 0.0
+      yaw: 0.0
+      roll: 0.0
+
+    - name: left
+      width: 1280
+      height: 720
+      fov: 90
+      x: 0
+      y: -0.8
+      z: 1.6
+      pitch: 0.0
+      yaw: -90.0
+      roll: 0.0
+
+    - name: right
+      width: 1280
+      height: 720
+      fov: 90
+      x: 0.0
+      y: 0.8
+      z: 1.6
+      pitch: 0.0
+      yaw: 90.0
+      roll: 0.0
+
+    - name: rear
+      width: 1280
+      height: 720
+      fov: 90
+      x: -1.5
+      y: 0.0
+      z: 1.6
+      pitch: 0.0
+      yaw: 180.0
+      roll: 0.0
+
 
   lidar:
     channels: 64

@@ -45,12 +45,20 @@ def spawn_semantic(world, vehicle, cfg):
     blueprint.set_attribute("image_size_x", str(cfg["width"]))
     blueprint.set_attribute("image_size_y", str(cfg["height"]))
     blueprint.set_attribute("fov", str(cfg["fov"]))
-    
+
     return world.spawn_actor(
         blueprint,
         make_transform(cfg),
         attach_to=vehicle,
     )
+
+
+def spawn_semantic_cameras(world, vehicle, semantic_cfgs):
+    cameras = {}
+    for cfg in semantic_cfgs:
+        name = cfg["name"]
+        cameras[name] = spawn_semantic(world, vehicle, cfg)
+    return cameras
 
 
 

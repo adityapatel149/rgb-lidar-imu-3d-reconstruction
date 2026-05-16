@@ -34,6 +34,7 @@ def load_xyz_points_npy(path, min_range=None, max_range=None):
 
 def make_scene_dirs(scene_dir: str, camera_names=None):
     scene_dir = Path(scene_dir)
+
     dirs = {
         "rgb": scene_dir / "rgb",
         "semantic": scene_dir / "semantic",
@@ -41,17 +42,22 @@ def make_scene_dirs(scene_dir: str, camera_names=None):
         "calib": scene_dir / "calib",
         "calib_validation": scene_dir / "calib" / "validation",
     }
-
     for d in dirs.values():
         d.mkdir(parents=True, exist_ok=True)
 
-    camera_dirs = {}
+    rgb_camera_dirs = {}
+    semantic_camera_dirs = {}
     if camera_names is not None:
         for name in camera_names:
-            camera_dirs[name] = dirs["rgb"] / name
-            camera_dirs[name].mkdir(parents=True, exist_ok=True)
+            rgb_camera_dirs[name] = dirs["rgb"] / name
+            rgb_camera_dirs[name].mkdir(parents=True, exist_ok=True)
 
-    dirs["camera_dirs"] = camera_dirs
+            semantic_camera_dirs[name] = dirs["semantic"] / name
+            semantic_camera_dirs[name].mkdir(parents=True, exist_ok=True)
+
+    dirs["camera_dirs"] = rgb_camera_dirs
+    dirs["semantic_camera_dirs"] = semantic_camera_dirs
+
     return dirs
 
 
@@ -200,8 +206,8 @@ def frame_writer_worker(save_queue, jpeg_quality=90, rgb_ext=".jpg"):
 
     Receives one full synchronized frame at a time and writes:
     - all RGB cameras
-    - semantic label PNG
-    - lidar NPY
+    - all semantic label cameras
+    - LiDAR NPY
 
     CSV is intentionally not written here. It is buffered in the main process
     and written once at the end for speed and deterministic ordering.
@@ -218,27 +224,17 @@ def frame_writer_worker(save_queue, jpeg_quality=90, rgb_ext=".jpg"):
             camera_names = item["camera_names"]
 
             for name in camera_names:
-                rgb_path = scene_dirs["camera_dirs"][name] / f"{frame:06d}{rgb_ext}"
-                save_rgb_packet(
-                    item["rgb"][name],
-                    rgb_path,
-                    jpeg_quality=jpeg_quality,
-                )
-
-            semantic_path = scene_dirs["semantic"] / f"{frame:06d}.png"
-            save_semantic_label_packet(
-                item["semantic"],
-                semantic_path,
-            )
-
+                rgb_path = (scene_dirs["camera_dirs"][name] / f"{frame:06d}{rgb_ext}")
+                save_rgb_packet(item["rgb"][name], rgb_path, jpeg_quality=jpeg_quality)
+                
+                semantic_path = (scene_dirs["semantic_camera_dirs"][name] / f"{frame:06d}.png")
+                save_semantic_label_packet(item["semantic"][name], semantic_path)
+                                
             lidar_path = scene_dirs["lidar"] / f"{frame:06d}.npy"
-            save_lidar_packet(
-                item["lidar"],
-                lidar_path,
-            )
+            save_lidar_packet(item["lidar"], lidar_path)
 
         except Exception as e:
-            frame = item.get("frame", "unknown") if isinstance(item, dict) else "unknown"
+            frame = (item.get("frame", "unknown") if isinstance(item, dict) else "unknown")
             print(f"[writer] Failed while saving frame {frame}: {e}", flush=True)
             raise
 

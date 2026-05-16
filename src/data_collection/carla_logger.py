@@ -8,7 +8,7 @@ import carla
 from src.data_collection.sync_mode import CarlaSyncMode
 
 from src.data_collection.sensor_setup import (
-    spawn_rgb_cameras, spawn_semantic, spawn_lidar, spawn_imu
+    spawn_rgb_cameras, spawn_semantic_cameras, spawn_lidar, spawn_imu
 )
 
 from src.utils.io import (
@@ -40,6 +40,27 @@ def spawn_vehicle(world, vehicle_blueprint_name, traffic_manager=None):
     else:
         vehicle.set_autopilot(True)
     return vehicle
+
+
+
+def spawn_npc_vehicles(world, traffic_manager, num_vehicles=30):
+    blueprints = world.get_blueprint_library().filter("vehicle.*")
+    spawn_points = world.get_map().get_spawn_points()
+    random.shuffle(spawn_points)
+    actors = []
+
+    for spawn_point in spawn_points[:num_vehicles]:
+        bp = random.choice(blueprints)
+        if bp.has_attribute("color"):
+            bp.set_attribute("color", random.choice(bp.get_attribute("color").recommended_values))
+
+        vehicle = world.try_spawn_actor(bp, spawn_point)
+
+        if vehicle is not None:
+            vehicle.set_autopilot(True, traffic_manager.get_port())
+            actors.append(vehicle)
+    return actors
+
 
 
 
@@ -102,30 +123,38 @@ def collect_carla_scene(
             cfg["vehicle"]["blueprint"],
             traffic_manager=tm,
         )
+        traffic_actors = spawn_npc_vehicles(
+            world,
+            tm,
+            num_vehicles=cfg.get("traffic", {}).get("vehicles", 30),
+        )
 
         camera_cfgs = cfg["sensors"]["cameras"]
         camera_names = [cam["name"] for cam in camera_cfgs]
+        semantic_cfgs = cfg["sensors"].get("semantic_cameras", camera_cfgs)
 
         rgb_cameras = spawn_rgb_cameras(world, vehicle, camera_cfgs)
-        semantic = spawn_semantic(world, vehicle, cfg["sensors"]["semantic"])
+        semantic_cameras = spawn_semantic_cameras(world, vehicle, semantic_cfgs)
         lidar = spawn_lidar(world, vehicle, cfg["sensors"]["lidar"])
         imu = spawn_imu(world, vehicle, cfg["sensors"]["imu"])
 
         sensors = {}
+
         for name, actor in rgb_cameras.items():
             sensors[f"rgb_{name}"] = actor
 
-        sensors["semantic"] = semantic
+        for name, actor in semantic_cameras.items():
+            sensors[f"semantic_{name}"] = actor
+
         sensors["lidar"] = lidar
         sensors["imu"] = imu
 
-        all_actors = list(rgb_cameras.values()) + [semantic, lidar, imu]
+        all_actors = list(rgb_cameras.values()) + list(semantic_cameras.values()) + [lidar, imu] + traffic_actors
 
         scene_dirs = make_scene_dirs(output_dir, camera_names=camera_names)
 
         # IMPORTANT:
-        # build_calibration now needs vehicle because calibration must be
-        # vehicle-relative, not world-relative.
+        # build_calibration now needs vehicle because calibration must be vehicle-relative, not world-relative.
         calibration = build_calibration(
             vehicle=vehicle,
             camera_cfgs=camera_cfgs,
@@ -189,7 +218,10 @@ def collect_carla_scene(
                     for name in camera_names
                 }
 
-                semantic_packet = pack_image(data["semantic"])
+                semantic_packets = {
+                    name: pack_image(data[f"semantic_{name}"])
+                    for name in camera_names
+                }
                 lidar_packet = pack_lidar(data["lidar"])
 
                 # Pose row.
@@ -264,7 +296,7 @@ def collect_carla_scene(
                         "scene_dirs": scene_dirs,
                         "camera_names": camera_names,
                         "rgb": rgb_packets,
-                        "semantic": semantic_packet,
+                        "semantic": semantic_packets,
                         "lidar": lidar_packet,
                     }
                 )

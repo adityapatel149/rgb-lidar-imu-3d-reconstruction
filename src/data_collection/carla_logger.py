@@ -20,9 +20,9 @@ from src.utils.io import (
     frame_writer_worker,
 )
 
-from src.utils.calibration import (
-    build_calibration, save_lidar_projection_debug
-)
+from src.calibration.calibration_builder import build_calibration
+from src.visualization.projection_debug import save_projection_debug_image
+
 
 def load_config(path):
     with open(path, "r") as f:
@@ -240,15 +240,18 @@ def collect_carla_scene(
                     ).reshape((-1, 4))
 
                     for cam_name in camera_names:
-                        save_lidar_projection_debug(
-                            rgb_image=data[f"rgb_{cam_name}"],
-                            lidar_points=lidar_points,
-                            camera_calib=calibration["cameras"][cam_name],
-                            lidar_calib=calibration["lidar"],
-                            output_path=(
-                                scene_dirs["calib_validation"]
-                                / f"lidar_projection_{cam_name}.png"
-                            ),
+                        camera_calib = calibration["cameras"][cam_name]
+
+                        save_projection_debug_image(
+                            image_bgra=np.frombuffer(data[f"rgb_{cam_name}"].raw_data, dtype=np.uint8),
+                            points_sensor_xyz=lidar_points[:, :3],
+                            T_vehicle_sensor=calibration["lidar"]["T_vehicle_lidar"],
+                            T_vehicle_camera=camera_calib["T_vehicle_camera"],
+                            K=camera_calib["K"],
+                            D=camera_calib["D"],
+                            output_path=(scene_dirs["calib_validation"] / f"lidar_projection_{cam_name}.png"),
+                            image_width=camera_calib["image_width"],
+                            image_height=camera_calib["image_height"],
                         )
 
                     validation_saved = True

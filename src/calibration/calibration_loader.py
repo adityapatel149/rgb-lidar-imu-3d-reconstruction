@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 import numpy as np
-
+from src.utils.transforms import transform_points
 
 
 class Calibration:
@@ -33,10 +33,7 @@ class Calibration:
 
 
     def transform_points(self, points_xyz, T_target_source):
-        ones = np.ones((points_xyz.shape[0], 1), dtype=np.float64)
-        points_h = np.hstack([points_xyz, ones])
-        transformed = (T_target_source @ points_h.T).T
-        return transformed[:, :3]
+        return transform_points(points_xyz, T_target_source)
 
 
 

@@ -2,6 +2,7 @@
 data
 outputs
 temp
+yolo*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

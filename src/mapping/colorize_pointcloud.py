@@ -5,17 +5,7 @@ import numpy as np
 
 from src.mapping.camera_selection import projection_quality, score_projection
 from src.utils.projection import project_sensor_points_to_camera_image
-
-
-
-def load_rgb_image(path):
-    path = Path(path)
-    image_bgr = cv2.imread(str(path), cv2.IMREAD_COLOR)
-    if image_bgr is None:
-        raise FileNotFoundError(f"Could not read RGB image: {path}")
-    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-    return image_rgb
-
+from src.utils.io import load_rgb_image
 
 
 def sample_rgb_nearest(image_rgb, uv):

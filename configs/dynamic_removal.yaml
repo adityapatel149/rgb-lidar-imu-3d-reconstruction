@@ -1,0 +1,53 @@
+method: yolo    # none, semantic, yolo
+
+
+semantic:
+  semantic_dir: semantic
+  semantic_extension: ".png"
+
+  always_dynamic_class_ids:
+    - 12   # Pedestrian
+    - 13   # Rider
+    - 21   # Dynamic
+
+  vehicle_class_ids:
+    - 14   # Car
+    - 15   # Truck
+    - 16   # Bus
+    - 18   # Motorcycle
+    - 19   # Bicycle
+
+  mask_dilation_px: 5
+ 
+  
+yolo:
+  model_path: yolo26m-seg.pt  
+  confidence: 0.15
+  iou: 0.75        
+  always_dynamic_class_names:
+    - person  
+  vehicle_class_names:
+    - bicycle
+    - car
+    - motorcycle
+    - bus
+    - truck
+
+  mask_dilation_px: 5
+
+
+projection:
+  min_depth: 0.1
+  border_margin_px: 2
+
+
+filtering:
+  keep_unprojected_points: true   # If true, LiDAR points that do not project into any camera are kept.
+
+vehicle_filtering:
+  # If true: parked/stationary vehicle points are kept, and moving/transient vehicle points are removed
+  # If false: all vehicle points are removed
+  keep_stationary_vehicles: true  
+  voxel_size_m: 0.10    # World-frame voxel size used to decide if vehicle points are stable.
+  min_observations_for_stationary: 20    # A vehicle voxel must be observed in at least this many frames to be treated as stationary.
+  min_frame_gap: 5    # Count observations only every N frames for the same voxel. This prevents adjacent frames from over-counting almost identical scans.

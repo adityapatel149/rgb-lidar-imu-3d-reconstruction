@@ -15,7 +15,7 @@ camera_names:   # Must match camera folder names, like rgb/front, rgb/right, etc
 rgb_extension: ".jpg"
 
 lidar:
-  min_range: 1.0
+  min_range: 0.5
   max_range: 80.0
   max_points_per_frame: null    # null uses all valid LiDAR points.
 
@@ -29,8 +29,8 @@ projection:
 
 mapping:
   frame_stride: 1
-  voxel_size: 0.15
-  remove_outliers: false
+  voxel_size: 0.10
+  remove_outliers: true
   outlier_nb_neighbors: 20
   outlier_std_ratio: 2.0    # lower value more agressive removal, higher value less agressive removal
 

@@ -7,6 +7,21 @@ import open3d as o3d
 
 
 
+def load_bgr_image(image_path):
+    image = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
+    if image is None:
+        raise FileNotFoundError(f"Could not read image: {image_path}")
+    return image
+
+
+
+def load_rgb_image(path):
+    path = Path(path)
+    image_bgr = load_bgr_image(path)
+    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+    return image_rgb
+
+
 
 def extract_frame_id(path):
     return int(Path(path).stem)

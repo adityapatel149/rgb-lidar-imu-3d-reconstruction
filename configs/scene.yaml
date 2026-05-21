@@ -1,5 +1,5 @@
 world:
-  town: Town02
+  town: Town05
   fixed_delta_seconds: 0.05    # 20fps
 
 

@@ -48,6 +48,6 @@ vehicle_filtering:
   # If true: parked/stationary vehicle points are kept, and moving/transient vehicle points are removed
   # If false: all vehicle points are removed
   keep_stationary_vehicles: true  
-  voxel_size_m: 0.10    # World-frame voxel size used to decide if vehicle points are stable.
-  min_observations_for_stationary: 20    # A vehicle voxel must be observed in at least this many frames to be treated as stationary.
+  voxel_size_m: 0.5    # World-frame voxel size used to decide if vehicle points are stable.
+  min_observations_for_stationary: 30    # A vehicle voxel must be observed in at least this many frames to be treated as stationary.
   min_frame_gap: 5    # Count observations only every N frames for the same voxel. This prevents adjacent frames from over-counting almost identical scans.

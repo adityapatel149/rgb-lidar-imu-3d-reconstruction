@@ -5,6 +5,15 @@ Robust static-world 3D reconstruction and localization from RGB, LiDAR, and IMU 
 Repository: https://github.com/adityapatel149/rgb-lidar-imu-3d-reconstruction
 
 
+
+https://github.com/user-attachments/assets/456439f4-3034-44bc-8aaf-2cd03a5a48a4
+
+
+
+https://github.com/user-attachments/assets/674ae5df-dd88-4241-94c8-797d5012ac5f
+
+
+
 ### Description
 
 - Built an end-to-end autonomous driving perception pipeline for multi-camera RGB, LiDAR, and IMU sensor fusion using **Python**, **CARLA**, **Open3D**, **OpenCV**, **PyTorch**, **YOLO-based segmentation**, and **YAML**-based experiment configuration.

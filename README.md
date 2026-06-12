@@ -1,22 +1,21 @@
 # Sensor Fusion 3D Reconstruction with Dynamic Object Removal
 
-Robust static-world 3D reconstruction and localization from RGB, LiDAR, and IMU in CARLA, with dynamic object removal and sim-to-real sensor corruption, evaluated in simulation and designed for transfer to real-world autonomous driving datasets such as KITTI and nuScenes.
+Robust static-world 3D reconstruction and localization from RGB, LiDAR, and IMU in CARLA, with dynamic object removal, evaluated on simulation data and real-world nuScenes scenes, spanning dense daytime traffic, multiple dynamic agents, and challenging low-visibility nighttime conditions.
 
 Repository: https://github.com/adityapatel149/rgb-lidar-imu-3d-reconstruction
 
 
 
-https://github.com/user-attachments/assets/456439f4-3034-44bc-8aaf-2cd03a5a48a4
+https://github.com/user-attachments/assets/c78545c6-c6b6-4cea-8eb5-502d64e122bd
 
 
 
-https://github.com/user-attachments/assets/674ae5df-dd88-4241-94c8-797d5012ac5f
 
 
 
 ### Description
 
-- Built an end-to-end autonomous driving perception pipeline for multi-camera RGB, LiDAR, and IMU sensor fusion using **Python**, **CARLA**, **Open3D**, **OpenCV**, **PyTorch**, **YOLO-based segmentation**, and **YAML**-based experiment configuration.
+- Built an end-to-end autonomous driving perception pipeline for multi-camera RGB, LiDAR, and IMU sensor fusion using **Python**, **CARLA**, **Open3D**, **OpenCV**, **PyTorch**, **YOLO-based segmentation**, and evaluated on **nuScenes** dataset.
 - Implemented LiDAR-inertial odometry with point-to-plane **ICP**, **IMU propagation**, and an **Error-State Kalman Filter** for tightly fused trajectory estimation, including ATE, final drift, ICP fitness, ICP RMSE, and residual tracking.
 - Developed RGB-colored **3D reconstruction** and static map building from synchronized **multi-camera RGB**, semantic segmentation, **LiDAR point clouds**, calibrated sensor intrinsics/extrinsics, voxel downsampling, statistical outlier removal, and multi-camera **projection scoring**.
 - Designed **dynamic object removal** using **instance segmentation**, with multi-camera LiDAR mask projection, **parked vehicle preservation**, moving object filtering, frame-level ablation reports, map quality metrics, and reconstruction evaluation tables.
@@ -105,6 +104,8 @@ The baseline map keeps all observed objects, including moving vehicles. After dy
 #### Object Removal Variants
 
 ![Dynamic object removal comparison 2](assets/dynamic_object_removal2.png)
+![Dynamic object removal comparison 3](assets/0103_dynamic_removal.png)
+![Dynamic object removal comparison 4](assets/1094_dynamic_removal.png)
 
 This comparison shows the effect of different filtering strategies:
 

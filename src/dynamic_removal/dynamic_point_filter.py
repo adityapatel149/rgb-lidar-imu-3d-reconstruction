@@ -42,6 +42,10 @@ class DynamicPointFilter:
                 confidence=yolo_cfg.get("confidence", 0.35),
                 iou=yolo_cfg.get("iou", 0.5),
                 mask_dilation_px=yolo_cfg.get("mask_dilation_px", 0),
+                imgsz=yolo_cfg.get("imgsz", 1280),
+                half=yolo_cfg.get("half", False),
+                device=yolo_cfg.get("device", None),
+                retina_masks=yolo_cfg.get("retina_masks", True),
             )
 
 

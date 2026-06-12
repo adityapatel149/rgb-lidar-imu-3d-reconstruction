@@ -25,6 +25,10 @@ class YoloDynamicMasker:
         confidence=0.35,
         iou=0.50,
         mask_dilation_px=0,
+        imgsz=1280,
+        half=False,
+        device=None,
+        retina_masks=True,
     ):
         try:
             from ultralytics import YOLO
@@ -55,7 +59,10 @@ class YoloDynamicMasker:
         self.confidence = float(confidence)
         self.iou = float(iou)
         self.mask_dilation_px = int(mask_dilation_px)
-
+        self.imgsz = int(imgsz)
+        self.half = bool(half)
+        self.device = device
+        self.retina_masks = bool(retina_masks)
 
 
     def __class_ids_for_names(self, target_names):
@@ -83,8 +90,21 @@ class YoloDynamicMasker:
         vehicle_mask = np.zeros((h, w), dtype=bool)
         always_dynamic_ids = self.__class_ids_for_names(self.always_dynamic_class_names)
         vehicle_ids = self.__class_ids_for_names(self.vehicle_class_names)
+        predict_kwargs = {
+            "conf": self.confidence,
+            "iou": self.iou,
+            "imgsz": self.imgsz,
+            "retina_masks": self.retina_masks,
+            "verbose": False,
+        }
 
-        results = self.model.predict(image_bgr, conf=self.confidence, iou=self.iou, verbose=False)
+        if self.device is not None:
+            predict_kwargs["device"] = self.device
+
+        if self.half:
+            predict_kwargs["half"] = True
+
+        results = self.model.predict(image_bgr, **predict_kwargs)
 
         if len(results) == 0:
             return {

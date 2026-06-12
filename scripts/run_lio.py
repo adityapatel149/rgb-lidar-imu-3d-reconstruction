@@ -1,11 +1,22 @@
 import argparse
 from pathlib import Path
 import json
+import numpy as np
 
 from src.odometry.lio import run_lio
 from src.evaluation.trajectory_eval import compute_ate, compute_final_drift
 from src.visualization.vis_trajectory import plot_trajectories
 from src.utils.io import save_trajectory_csv, save_pose_matrices_npz
+
+
+def nearest_pose_sequence(source_times, source_poses, target_times):
+    source_times = np.asarray(source_times, dtype=np.float64)
+    out = []
+    for t in target_times:
+        idx = int(np.argmin(np.abs(source_times - float(t))))
+        out.append(source_poses[idx])
+    return out
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -27,7 +38,11 @@ def main():
     gt = results["gt_poses"]
     icp = results["icp_poses"]
     fused = results["fused_poses"]
-    imu = results["imu_poses"][: len(gt)]
+    imu = nearest_pose_sequence(
+        results["imu_timestamps"],
+        results["imu_poses"],
+        results["timestamps"],
+    )
 
     metrics = {
         "imu_only_ate": compute_ate(gt, imu),

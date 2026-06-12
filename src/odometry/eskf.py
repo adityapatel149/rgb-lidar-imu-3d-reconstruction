@@ -46,12 +46,12 @@ class ErrorStateKalmanFilter:
         dx = [dp, dv, dtheta, db_a, db_g] 15x1
     """
 
-    def __init__(self, initial_pose=None, gravity=np.array([0.0, 0.0, -9.81])):
+    def __init__(self, initial_pose=None, initial_velocity=None, gravity=np.array([0.0, 0.0, -9.81])):
         if initial_pose is None:
             initial_pose = np.eye(4, dtype=np.float64)
 
         self.p = initial_pose[:3, 3].astype(np.float64)
-        self.v = np.zeros(3, dtype=np.float64)
+        self.v = np.asarray(initial_velocity, dtype=np.float64) if initial_velocity is not None else np.zeros(3, dtype=np.float64)
         self.R = initial_pose[:3, :3].astype(np.float64)
         self.b_a = np.zeros(3, dtype=np.float64)
         self.b_g = np.zeros(3, dtype=np.float64)
@@ -59,6 +59,12 @@ class ErrorStateKalmanFilter:
         self.g = gravity.astype(np.float64)
 
         self.P = np.eye(15, dtype=np.float64) * 1e-2
+        
+        self.P[0:3, 0:3] *= 1e-4      # position known relative to start
+        self.P[3:6, 3:6] *= 10.0      # velocity uncertain
+        self.P[6:9, 6:9] *= 1e-3      # orientation moderately known
+        self.P[9:12, 9:12] *= 0.1     # accel bias uncertain
+        self.P[12:15, 12:15] *= 0.01  # gyro bias uncertain
 
         self.sigma_acc = 0.15
         self.sigma_gyro = 0.02

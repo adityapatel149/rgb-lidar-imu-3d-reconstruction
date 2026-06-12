@@ -1,6 +1,7 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import json
 
 from src.calibration.calibration_loader import Calibration
 from src.odometry.eskf import ErrorStateKalmanFilter
@@ -8,6 +9,23 @@ from src.odometry.icp_odometry import load_lidar_cloud, run_icp_pair, lidar_file
 from src.odometry.trajectory_utils import pose_row_to_matrix
 from src.utils.io import extract_frame_id
 
+
+def load_initial_velocity(scene_dir):
+    path = Path(scene_dir) / "metadata.json"
+    if not path.exists():
+        return np.zeros(3, dtype=np.float64)
+
+    with path.open("r") as f:
+        meta = json.load(f)
+    v = meta.get("initial_velocity", {}).get("value", None)
+    if v is None:
+        return np.zeros(3, dtype=np.float64)
+    
+    v = np.asarray(v, dtype=np.float64)
+    if v.shape != (3,) or not np.isfinite(v).all():
+        return np.zeros(3, dtype=np.float64)
+    
+    return v
 
 
 def load_ground_truth_by_frame(scene_dir):
@@ -42,9 +60,9 @@ def find_imu_range(imu_df, t0, t1, start_index):
 
 
 
-def imu_only_trajectory(scene_dir, initial_pose=None, max_acc_norm=50.0):
+def imu_only_trajectory(scene_dir, initial_pose=None, initial_velocity=None, max_acc_norm=50.0):
     imu_df = load_imu(scene_dir)
-    eskf = ErrorStateKalmanFilter(initial_pose=initial_pose)
+    eskf = ErrorStateKalmanFilter(initial_pose=initial_pose, initial_velocity=initial_velocity)
     poses = [eskf.pose_matrix()]
     timestamps = [float(imu_df.loc[0, "timestamp"])]
 
@@ -112,8 +130,9 @@ def run_lio(scene_dir, calib_path=None, voxel_size=0.25, max_correspondence_dist
 
     first_frame = frame_ids[0]
     initial_pose = np.eye(4, dtype=np.float64)
+    initial_velocity = load_initial_velocity(scene_dir)
 
-    eskf = ErrorStateKalmanFilter(initial_pose=initial_pose)
+    eskf = ErrorStateKalmanFilter(initial_pose=initial_pose, initial_velocity=initial_velocity)
     
     fused_poses = [eskf.pose_matrix()]
     icp_poses = [np.eye(4, dtype=np.float64)]
@@ -214,8 +233,9 @@ def run_lio(scene_dir, calib_path=None, voxel_size=0.25, max_correspondence_dist
             pos_noise=0.35,
             rot_noise=0.65,
             update_velocity=True,
-            update_bias=False,
+            update_bias=True,
         )
+
         fused_poses.append(eskf.pose_matrix())
         icp_poses.append(icp_poses[-1] @ T_vehicle_prev_vehicle_curr_icp)
 
@@ -249,6 +269,7 @@ def run_lio(scene_dir, calib_path=None, voxel_size=0.25, max_correspondence_dist
     imu_timestamps, imu_poses = imu_only_trajectory(
         scene_dir,
         initial_pose=np.eye(4, dtype=np.float64),
+        initial_velocity=initial_velocity,
     )
 
     return {

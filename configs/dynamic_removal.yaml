@@ -21,9 +21,13 @@ semantic:
  
   
 yolo:
-  model_path: yolo26m-seg.pt  
-  confidence: 0.15
-  iou: 0.75        
+  model_path: yolo26l-seg.engine 
+  confidence: 0.03
+  iou: 0.75
+  imgsz: 1280
+  half: false
+  device: 0
+  retina_masks: true
   always_dynamic_class_names:
     - person  
   vehicle_class_names:
@@ -33,7 +37,7 @@ yolo:
     - bus
     - truck
 
-  mask_dilation_px: 5
+  mask_dilation_px: 10
 
 
 projection:

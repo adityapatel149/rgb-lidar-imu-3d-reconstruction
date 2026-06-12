@@ -5,3 +5,6 @@ open3d
 matplotlib
 pyyaml
 tqdm
+
+nuscenes-devkit 
+pyquaternion

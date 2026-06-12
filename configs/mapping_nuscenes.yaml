@@ -1,0 +1,48 @@
+scene_dir: data/nuscenes/converted/scene_0061
+trajectory_dir: data/nuscenes/converted/scene_0061/trajectory_reference
+output_dir: outputs/maps/nuscenes_scene_0061
+
+calibration_path: data/nuscenes/converted/scene_0061/calib/calibration.json 
+pose_source_for_main_output: fused
+
+camera_names:
+  - CAM_FRONT
+  - CAM_FRONT_LEFT
+  - CAM_FRONT_RIGHT
+  - CAM_BACK
+  - CAM_BACK_LEFT
+  - CAM_BACK_RIGHT
+
+rgb_extension: ".jpg"
+
+lidar:
+  min_range: 0.1
+  max_range: 80.0
+  max_points_per_frame: null
+
+projection:
+  min_depth: 0.5
+  border_margin_px: 2
+  center_weight: 1.0
+  angle_weight: 1.0
+  depth_weight: 0.05
+  color_mode: average
+
+mapping:
+  frame_stride: 1
+  voxel_size: 0.10
+  remove_outliers: true
+  outlier_nb_neighbors: 20
+  outlier_std_ratio: 2.0
+
+evaluation:
+  max_eval_points: 1000000
+  eval_initial_voxel_size: 0.05
+  distance_thresholds_m: [0.10, 0.25, 0.50, 1.00]
+  voxel_sizes_m: [0.10, 0.25, 0.50]
+  normal_radius: 0.50
+  normal_max_nn: 30
+
+visualization:
+  max_points_plot: 1000000
+  initial_voxel_size_plot: 0.05
